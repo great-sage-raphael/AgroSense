@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adaptive Farm Intelligence</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+        
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+        
+        .input-group input:focus, .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .sensor-reading {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .sensor-reading .label {
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .sensor-reading .value {
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .recommendation-box {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 15px;
+        }
+        
+        .recommendation-box h3 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .recommendation-item {
+            background: rgba(255,255,255,0.2);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .history-table th, .history-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .history-table th {
+            background: #667eea;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .history-table tr:hover {
+            background: #f5f5f5;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-top: 20px;
+        }
+        
+        .weather-widget {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-radius: 12px;
+            color: white;
+            margin-bottom: 15px;
+        }
+        
+        .weather-icon {
+            font-size: 3em;
+        }
+        
+        .weather-info h3 {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌾 Adaptive Farm Intelligence</h1>
+            <p>AI-Powered Agricultural Recommendations that Learn & Adapt</p>
+        </header>
+        
+        <div class="dashboard">
+            <!-- Sensor Input Card -->
+            <div class="card">
+                <h2>📊 Current Sensor Data</h2>
+                <div class="input-group">
+                    <label>Nitrogen (N) - mg/kg</label>
+                    <input type="number" id="nitrogen" value="45" min="0" max="200">
+                </div>
+                <div class="input-group">
+                    <label>Phosphorus (P) - mg/kg</label>
+                    <input type="number" id="phosphorus" value="30" min="0" max="100">
+                </div>
+                <div class="input-group">
+                    <label>Potassium (K) - mg/kg</label>
+                    <input type="number" id="potassium" value="35" min="0" max="200">
+                </div>
+                <div class="input-group">
+                    <label>Soil pH</label>
+                    <input type="number" id="ph" value="6.5" min="4" max="9" step="0.1">
+                </div>
+                <div class="input-group">
+                    <label>Soil Moisture (%)</label>
+                    <input type="number" id="moisture" value="40" min="0" max="100">
+                </div>
+                <div class="input-group">
+                    <label>Crop Type</label>
+                    <select id="crop">
+                        <option value="rice">Rice</option>
+                        <option value="wheat">Wheat</option>
+                        <option value="maize">Maize</option>
+                        <option value="cotton">Cotton</option>
+                        <option value="vegetables">Vegetables</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Growth Stage</label>
+                    <select id="stage">
+                        <option value="seedling">Seedling</option>
+                        <option value="vegetative">Vegetative</option>
+                        <option value="flowering">Flowering</option>
+                        <option value="maturity">Maturity</option>
+                    </select>
+                </div>
+                <button class="btn" onclick="analyzeAndRecommend()">🔍 Analyze & Get Recommendations</button>
+                <button class="btn" onclick="simulateSensorUpdate()" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">🔄 Simulate Sensor Update</button>
+            </div>
+            
+            <!-- Weather & Adaptive Insights -->
+            <div class="card">
+                <h2>🌤️ Weather-Aware Analysis</h2>
+                <div id="weatherWidget"></div>
+                <div id="adaptiveInsights"></div>
+            </div>
+            
+            <!-- Recommendations Card -->
+            <div class="card">
+                <h2>💡 Adaptive Recommendations</h2>
+                <div id="recommendations"></div>
+            </div>
+        </div>
+        
+        <!-- Analytics Dashboard -->
+        <div class="card">
+            <h2>📈 Historical Trends & Learning</h2>
+            <div class="chart-container">
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Historical Data Table -->
+        <div class="card">
+            <h2>📜 Historical Records</h2>
+            <div style="overflow-x: auto;">
+                <table class="history-table" id="historyTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Crop</th>
+                            <th>N</th>
+                            <th>P</th>
+                            <th>K</th>
+                            <th>pH</th>
+                            <th>Moisture</th>
+                            <th>Recommendation</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Historical data storage (in real app, use database)
+        let historicalData = [
+            {date: '2025-09-15', crop: 'rice', n: 40, p: 25, k: 30, ph: 6.2, moisture: 45, recommendation: 'Initial baseline'},
+            {date: '2025-09-30', crop: 'rice', n: 35, p: 22, k: 28, ph: 6.3, moisture: 42, recommendation: 'Applied NPK 20-10-10'},
+            {date: '2025-10-01', crop: 'wheat', n: 50, p: 28, k: 32, ph: 6.8, moisture: 38, recommendation: 'Reduced N, increased K'}
+        ];
+        
+        let trendChart = null;
+        
+        // Weather simulation (in production, use OpenWeatherMap API)
+        function getWeatherData() {
+            const conditions = ['Sunny', 'Rainy', 'Cloudy', 'Hot', 'Humid'];
+            const temps = [28, 32, 25, 35, 30];
+            const rainfall = [0, 15, 5, 0, 8];
+            const idx = Math.floor(Math.random() * conditions.length);
+            
+            return {
+                condition: conditions[idx],
+                temp: temps[idx],
+                rainfall: rainfall[idx],
+                humidity: Math.floor(Math.random() * 40) + 50
+            };
+        }
+        
+        function displayWeather() {
+            const weather = getWeatherData();
+            const icons = {
+                'Sunny': '☀️',
+                'Rainy': '🌧️',
+                'Cloudy': '☁️',
+                'Hot': '🌡️',
+                'Humid': '💧'
+            };
+            
+            document.getElementById('weatherWidget').innerHTML = `
+                <div class="weather-widget">
+                    <div class="weather-icon">${icons[weather.condition] || '🌤️'}</div>
+                    <div class="weather-info">
+                        <h3>${weather.condition}</h3>
+                        <p>Temperature: ${weather.temp}°C | Humidity: ${weather.humidity}%</p>
+                        <p>Rainfall: ${weather.rainfall}mm</p>
+                    </div>
+                </div>
+            `;
+            
+            return weather;
+        }
+        
+        function getAdaptiveInsights(currentData, weather) {
+            const history = historicalData.filter(d => d.crop === currentData.crop);
+            let insights = [];
+            
+            // Compare with previous readings
+            if (history.length > 0) {
+                const lastReading = history[history.length - 1];
+                
+                if (currentData.n < lastReading.n - 5) {
+                    insights.push({
+                        type: 'warning',
+                        message: `Nitrogen declined from ${lastReading.n} to ${currentData.n}. Fertilizer may not be effective or uptake is high.`
+                    });
+                }
+                
+                if (currentData.p < lastReading.p - 3) {
+                    insights.push({
+                        type: 'info',
+                        message: `Phosphorus dropping. Crop uptake detected. Consider supplementation.`
+                    });
+                }
+            }
+            
+            // Weather-based insights
+            if (weather.rainfall > 10) {
+                insights.push({
+                    type: 'warning',
+                    message: `High rainfall detected (${weather.rainfall}mm). Nitrogen leaching risk. Reduce N application.`
+                });
+            }
+            
+            if (weather.temp > 33) {
+                insights.push({
+                    type: 'info',
+                    message: `High temperature (${weather.temp}°C). Increase irrigation frequency. Monitor moisture closely.`
+                });
+            }
+            
+            if (currentData.moisture < 30) {
+                insights.push({
+                    type: 'warning',
+                    message: `Low soil moisture (${currentData.moisture}%). Immediate irrigation required.`
+                });
+            }
+            
+            return insights;
+        }
+        
+        function calculateAdaptiveRecommendation(currentData, weather) {
+            // Base requirements by crop
+            const cropRequirements = {
+                rice: {n: 80, p: 40, k: 40, ph: [5.5, 6.5]},
+                wheat: {n: 120, p: 60, k: 40, ph: [6.0, 7.5]},
+                maize: {n: 150, p: 60, k: 50, ph: [5.8, 7.0]},
+                cotton: {n: 100, p: 50, k: 60, ph: [6.0, 7.5]},
+                vegetables: {n: 80, p: 50, k: 50, ph: [6.0, 7.0]}
+            };
+            
+            const requirements = cropRequirements[currentData.crop];
+            let nDose = Math.max(0, requirements.n - currentData.n);
+            let pDose = Math.max(0, requirements.p - currentData.p);
+            let kDose = Math.max(0, requirements.k - currentData.k);
+            
+            // Adaptive adjustments based on history
+            const history = historicalData.filter(d => d.crop === currentData.crop);
+            if (history.length > 0) {
+                const lastReading = history[history.length - 1];
+                
+                // If nutrients didn't improve much, increase dose
+                if (currentData.n < lastReading.n && nDose > 0) {
+                    nDose *= 1.2;
+                }
+            }
+            
+            // Weather-based adjustments
+            if (weather.rainfall > 10) {
+                nDose *= 0.7; // Reduce nitrogen due to leaching risk
+            }
+            
+            if (weather.temp > 33) {
+                kDose *= 1.1; // Increase potassium for heat stress
+            }
+            
+            // Growth stage adjustments
+            const stageMultipliers = {
+                seedling: 0.5,
+                vegetative: 1.2,
+                flowering: 1.0,
+                maturity: 0.3
+            };
+            
+            const mult = stageMultipliers[currentData.stage] || 1.0;
+            nDose *= mult;
+            pDose *= mult;
+            kDose *= mult;
+            
+            return {
+                n: Math.round(nDose),
+                p: Math.round(pDose),
+                k: Math.round(kDose),
+                irrigation: currentData.moisture < 35 ? 'High priority' : 'Normal schedule',
+                phAdjustment: currentData.ph < requirements.ph[0] ? 'Apply lime to increase pH' : 
+                              currentData.ph > requirements.ph[1] ? 'Apply sulfur to decrease pH' : 'pH optimal'
+            };
+        }
+        
+        function analyzeAndRecommend() {
+            const currentData = {
+                n: parseFloat(document.getElementById('nitrogen').value),
+                p: parseFloat(document.getElementById('phosphorus').value),
+                k: parseFloat(document.getElementById('potassium').value),
+                ph: parseFloat(document.getElementById('ph').value),
+                moisture: parseFloat(document.getElementById('moisture').value),
+                crop: document.getElementById('crop').value,
+                stage: document.getElementById('stage').value,
+                date: new Date().toISOString().split('T')[0]
+            };
+            
+            const weather = displayWeather();
+            const insights = getAdaptiveInsights(currentData, weather);
+            const recommendation = calculateAdaptiveRecommendation(currentData, weather);
+            
+            // Display insights
+            let insightsHTML = '<h3 style="color: #667eea; margin-bottom: 15px;">🧠 AI Insights</h3>';
+            insights.forEach(insight => {
+                insightsHTML += `<div class="alert alert-${insight.type}">${insight.message}</div>`;
+            });
+            document.getElementById('adaptiveInsights').innerHTML = insightsHTML;
+            
+            // Display recommendations
+            let recHTML = `
+                <div class="recommendation-box">
+                    <h3>🎯 Adaptive Fertilizer Plan</h3>
+                    <div class="recommendation-item">
+                        <strong>Nitrogen (N):</strong> ${recommendation.n} kg/ha
+                    </div>
+                    <div class="recommendation-item">
+                        <strong>Phosphorus (P):</strong> ${recommendation.p} kg/ha
+                    </div>
+                    <div class="recommendation-item">
+                        <strong>Potassium (K):</strong> ${recommendation.k} kg/ha
+                    </div>
+                    <div class="recommendation-item">
+                        <strong>Irrigation:</strong> ${recommendation.irrigation}
+                    </div>
+                    <div class="recommendation-item">
+                        <strong>pH Management:</strong> ${recommendation.phAdjustment}
+                    </div>
+                </div>
+                <div class="alert alert-success" style="margin-top: 15px;">
+                    ✅ Recommendations adapted based on ${historicalData.length} historical readings and current weather conditions.
+                </div>
+            `;
+            document.getElementById('recommendations').innerHTML = recHTML;
+            
+            // Add to history
+            historicalData.push({
+                ...currentData,
+                recommendation: `N:${recommendation.n} P:${recommendation.p} K:${recommendation.k}`
+            });
+            
+            updateHistoryTable();
+            updateChart();
+        }
+        
+        function updateHistoryTable() {
+            const tbody = document.getElementById('historyBody');
+            tbody.innerHTML = '';
+            
+            historicalData.slice(-10).reverse().forEach(record => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${record.date}</td>
+                    <td>${record.crop}</td>
+                    <td>${record.n}</td>
+                    <td>${record.p}</td>
+                    <td>${record.k}</td>
+                    <td>${record.ph}</td>
+                    <td>${record.moisture}%</td>
+                    <td>${record.recommendation}</td>
+                `;
+            });
+        }
+        
+        function updateChart() {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            
+            if (trendChart) {
+                trendChart.destroy();
+            }
+            
+            const labels = historicalData.slice(-7).map(d => d.date);
+            const nData = historicalData.slice(-7).map(d => d.n);
+            const pData = historicalData.slice(-7).map(d => d.p);
+            const kData = historicalData.slice(-7).map(d => d.k);
+            
+            trendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Nitrogen (N)',
+                            data: nData,
+                            borderColor: '#667eea',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Phosphorus (P)',
+                            data: pData,
+                            borderColor: '#f093fb',
+                            backgroundColor: 'rgba(240, 147, 251, 0.1)',
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Potassium (K)',
+                            data: kData,
+                            borderColor: '#4facfe',
+                            backgroundColor: 'rgba(79, 172, 254, 0.1)',
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Nutrient Trends Over Time'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'mg/kg'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function simulateSensorUpdate() {
+            // Simulate realistic sensor changes
+            const nChange = Math.floor(Math.random() * 10) - 5;
+            const pChange = Math.floor(Math.random() * 6) - 3;
+            const kChange = Math.floor(Math.random() * 8) - 4;
+            
+            document.getElementById('nitrogen').value = Math.max(20, Math.min(100, parseFloat(document.getElementById('nitrogen').value) + nChange));
+            document.getElementById('phosphorus').value = Math.max(15, Math.min(60, parseFloat(document.getElementById('phosphorus').value) + pChange));
+            document.getElementById('potassium').value = Math.max(20, Math.min(80, parseFloat(document.getElementById('potassium').value) + kChange));
+            document.getElementById('moisture').value = Math.max(25, Math.min(70, parseFloat(document.getElementById('moisture').value) + Math.floor(Math.random() * 10) - 5));
+            
+            analyzeAndRecommend();
+        }
+        
+        // Initialize on load
+        window.onload = function() {
+            updateHistoryTable();
+            updateChart();
+            displayWeather();
+        };
+    </script>
+</body>
+</html>
